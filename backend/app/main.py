@@ -7,16 +7,19 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.data_loader import load_pages
+from app.pagerank import compute_pagerank
 from app.search import search
 
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    """Load Wikipedia data on startup."""
+    """Load Wikipedia data and compute PageRank on startup."""
     data_dir = Path(__file__).parent.parent / 'data' / 'wikipedia'
     db = load_pages(data_dir)
-    application.state.db = db
     print(f"Loaded {len(db.pages)} pages with {len(db.word_to_pages)} unique words")
+    compute_pagerank(db, iterations=20)
+    print("PageRank computed (20 iterations)")
+    application.state.db = db
     yield
 
 
@@ -44,7 +47,8 @@ async def search_pages(
     """
     Search Wikipedia pages.
 
-    Returns top 5 pages ranked by: word_frequency + 0.8 * document_location
+    Returns top 5 pages ranked by:
+    word_frequency + 0.8 * document_location + 0.5 * pagerank
     """
     db = app.state.db
     results = search(q, db, limit=5)
@@ -56,8 +60,8 @@ async def search_pages(
                 "page": r.name,
                 "score": r.score,
                 "content": r.content_score,
-                "location": r.location_score,
-                "pagerank": 0.0
+                "location": round(0.8 * r.location_score, 2),
+                "pagerank": round(0.5 * r.pagerank_score, 2)
             }
             for r in results
         ],

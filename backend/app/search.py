@@ -11,6 +11,7 @@ class SearchResult:
     score: float
     content_score: float
     location_score: float
+    pagerank_score: float
 
 
 def get_word_frequency(page, words: list[str]) -> int:
@@ -21,14 +22,14 @@ def get_word_frequency(page, words: list[str]) -> int:
 def get_document_location(page, words: list[str]) -> int:
     """
     Sum of first occurrence positions for all query words.
-    Position is 1-indexed. If word not found, use 100000.
+    Position is 1-indexed. Missing words get a large penalty.
     """
     total = 0
     for word in words:
         try:
             pos = page.words.index(word) + 1  # 1-indexed
         except ValueError:
-            pos = 100000  # Not found
+            pos = 100000  # Large penalty for missing word
         total += pos
     return total
 
@@ -55,8 +56,8 @@ def search(query: str, db: PageDB, limit: int = 5) -> list[SearchResult]:
     """
     Search for words and return top results.
 
-    Scoring: word_frequency + 0.8 * document_location
-    Both metrics are normalized to 0.0-1.0 range.
+    Scoring: word_frequency + 0.8 * document_location + 0.5 * pagerank
+    All metrics are normalized to 0.0-1.0 range.
     """
     words = query.lower().strip().split()
 
@@ -78,27 +79,31 @@ def search(query: str, db: PageDB, limit: int = 5) -> list[SearchResult]:
         page = db.pages[idx]
         freq = get_word_frequency(page, words)
         loc = get_document_location(page, words)
-        raw_data.append((page.name, freq, loc))
+        raw_data.append((page.name, freq, loc, page.pagerank))
 
     # Extract raw scores
     freqs = [d[1] for d in raw_data]
     locs = [d[2] for d in raw_data]
+    pageranks = [d[3] for d in raw_data]
 
     # Normalize
     norm_freqs = normalize_higher_better(freqs)
     norm_locs = normalize_lower_better(locs)
+    norm_pageranks = normalize_higher_better(pageranks)
 
     # Combine scores and build results
     results = []
-    for i, (name, _, _) in enumerate(raw_data):
+    for i, (name, _, _, _) in enumerate(raw_data):
         content = norm_freqs[i]
         location = norm_locs[i]
-        score = content + 0.8 * location
+        pagerank = norm_pageranks[i]
+        score = content + 0.8 * location + 0.5 * pagerank
         results.append(SearchResult(
             name=name,
             score=round(score, 2),
             content_score=round(content, 2),
-            location_score=round(location, 2)
+            location_score=round(location, 2),
+            pagerank_score=round(pagerank, 2)
         ))
 
     # Sort by combined score descending
