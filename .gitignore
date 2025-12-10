@@ -1,0 +1,15 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/app/__pycache__/
+*.pyc
+
+# Node
+frontend/node_modules/
+
+# Data (large dataset)
+backend/data/wikipedia/
+
+# IDE
+.vscode/
+.idea/
