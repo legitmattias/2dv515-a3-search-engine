@@ -42,10 +42,9 @@ async def search_pages(
     q: str = Query(..., min_length=1, description="Search query")
 ):
     """
-    Search Wikipedia pages by word frequency.
+    Search Wikipedia pages.
 
-    Returns top 5 pages containing the query word,
-    ranked by word frequency (normalized to 0.0-1.0).
+    Returns top 5 pages ranked by: word_frequency + 0.8 * document_location
     """
     db = app.state.db
     results = search(q, db, limit=5)
@@ -57,7 +56,7 @@ async def search_pages(
                 "page": r.name,
                 "score": r.score,
                 "content": r.content_score,
-                "location": 0.0,
+                "location": r.location_score,
                 "pagerank": 0.0
             }
             for r in results
