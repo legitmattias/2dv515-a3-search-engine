@@ -63,7 +63,8 @@ def load_pages(data_dir: Path) -> PageDB:
                 for line in links_content.strip().split('\n'):
                     if line.startswith('/wiki/'):
                         link_name = line[6:]  # Remove '/wiki/' prefix
-                        links.add(link_name)
+                        if link_name != name:  # Exclude self-links
+                            links.add(link_name)
 
             page = Page(
                 name=name,

@@ -6,8 +6,7 @@ from app.data_loader import PageDB
 def compute_pagerank(db: PageDB, iterations: int = 20, damping: float = 0.85):
     """
     Runs PageRank on all pages. Each page starts with rank 1.0 and the
-    algorithm iterates until values stabilize (20 iterations should be
-    enough for a dataset this size).
+    algorithm iterates until values stabilize.
     """
     # Start everyone at 1.0
     for page in db.pages:

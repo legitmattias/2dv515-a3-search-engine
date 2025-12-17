@@ -73,6 +73,9 @@ def search(query: str, db: PageDB, limit: int = 5) -> list[SearchResult]:
     if not page_indices:
         return []
 
+    # Get global max PageRank for normalization (PageRank is a global property)
+    global_max_pr = max(p.pagerank for p in db.pages)
+
     # Calculate raw scores for each page
     raw_data = []
     for idx in page_indices:
@@ -86,10 +89,10 @@ def search(query: str, db: PageDB, limit: int = 5) -> list[SearchResult]:
     locs = [d[2] for d in raw_data]
     pageranks = [d[3] for d in raw_data]
 
-    # Normalize
+    # Normalize (PageRank uses global max, others use query-local max/min)
     norm_freqs = normalize_higher_better(freqs)
     norm_locs = normalize_lower_better(locs)
-    norm_pageranks = normalize_higher_better(pageranks)
+    norm_pageranks = [pr / global_max_pr for pr in pageranks]
 
     # Combine scores and build results
     results = []
