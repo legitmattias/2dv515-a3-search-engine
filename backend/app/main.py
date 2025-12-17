@@ -17,8 +17,9 @@ async def lifespan(application: FastAPI):
     data_dir = Path(__file__).parent.parent / 'data' / 'wikipedia'
     db = load_pages(data_dir)
     print(f"Loaded {len(db.pages)} pages with {len(db.word_to_pages)} unique words")
-    compute_pagerank(db, iterations=20)
-    print("PageRank computed (20 iterations)")
+    iterations = 20
+    compute_pagerank(db, iterations=iterations)
+    print(f"PageRank computed ({iterations} iterations)")
     application.state.db = db
     yield
 
