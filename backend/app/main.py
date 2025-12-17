@@ -60,8 +60,8 @@ async def search_pages(
                 "page": r.name,
                 "score": r.score,
                 "content": r.content_score,
-                "location": round(0.8 * r.location_score, 2),
-                "pagerank": round(0.5 * r.pagerank_score, 2)
+                "location": r.location_score,
+                "pagerank": r.pagerank_score
             }
             for r in results
         ],

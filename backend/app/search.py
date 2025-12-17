@@ -95,9 +95,9 @@ def search(query: str, db: PageDB, limit: int = 5) -> list[SearchResult]:
     results = []
     for i, (name, _, _, _) in enumerate(raw_data):
         content = norm_freqs[i]
-        location = norm_locs[i]
-        pagerank = norm_pageranks[i]
-        score = content + 0.8 * location + 0.5 * pagerank
+        location = 0.8 * norm_locs[i]
+        pagerank = 0.5 * norm_pageranks[i]
+        score = content + location + pagerank
         results.append(SearchResult(
             name=name,
             score=round(score, 2),
