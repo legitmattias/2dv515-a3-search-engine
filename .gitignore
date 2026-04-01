@@ -7,8 +7,8 @@ backend/app/__pycache__/
 # Node
 frontend/node_modules/
 
-# Data (large dataset)
-backend/data/wikipedia/
+# Data (large dataset - zips only)
+backend/data/wikipedia/*.zip
 
 # IDE
 .vscode/
